@@ -1,122 +1,98 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+﻿import React, { useState } from "react";
+import { styles } from "./constants/theme";
 
-function App() {
-  const [count, setCount] = useState(0)
+import homeIcon from "./assets/Star Filled.png";
+import projectsIcon from "./assets/Create.png";
+import profileIcon from "./assets/Profile.png";
+import settingsIcon from "./assets/Settings.png";
+
+// Importação das telas organizadas
+import { HomePage } from "./screens/HomePage";
+import { LoginScreen } from "./screens/LoginScreen";
+import { RegisterScreen } from "./screens/RegisterScreen";
+import { ProfileScreen } from "./screens/ProfileScreen";
+import { SettingsScreen } from "./screens/SettingsScreen";
+import { ProjectsTab } from "./screens/ProjectsTab";
+import { ProjectDetailScreen } from "./screens/ProjectDetailScreen";
+
+export default function App() {
+  const [screen, setScreen] = useState("home");
+  const [projects, setProjects] = useState([
+    { id: 1, title: "Projeto 1", desc: "Descrição do seu projeto. Uma breve descrição sobre o que é o projeto.", color: "#EDE9FE", images: [] },
+  ]);
+  const [selectedProject, setSelectedProject] = useState(null);
+
+  const navItems = [
+    { key: "home", label: "Início", icon: homeIcon  },
+    { key: "projects", label: "Projetos", icon: projectsIcon  },
+    { key: "profile", label: "Perfil", icon: profileIcon},
+    { key: "settings", label: "Configurações", icon: settingsIcon },
+  ];
+
+  const handleNav = key => {
+    setScreen(key);
+  };
+
+  const handleSelectProject = (project) => {
+    setSelectedProject(project);
+    setScreen("projectDetail");
+  };
+
+  const handleBackFromDetail = () => {
+    setSelectedProject(null);
+    setScreen("projects");
+  };
+
+  const handleUpdateProject = (updatedProject) => {
+    setProjects(projects.map(p => p.id === updatedProject.id ? updatedProject : p));
+    setSelectedProject(updatedProject);
+  };
+
+  const renderScreen = () => {
+    switch (screen) {
+      case "home": return <HomePage onNavigate={handleNav} />;
+      case "login": return <LoginScreen onNavigate={handleNav} />;
+      case "register": return <RegisterScreen onNavigate={handleNav} />;
+      case "profile": return <ProfileScreen onNavigate={handleNav} />;
+      case "settings": return <SettingsScreen onNavigate={handleNav} />;
+      case "projects": return <ProjectsTab projects={projects} setProjects={setProjects} onSelectProject={handleSelectProject} />;
+      case "projectDetail": return selectedProject ? <ProjectDetailScreen project={selectedProject} onBack={handleBackFromDetail} onUpdateProject={handleUpdateProject} /> : <ProjectsTab projects={projects} setProjects={setProjects} onSelectProject={handleSelectProject} />;
+      default: return <HomePage onNavigate={handleNav} />;
+    }
+  };
 
   return (
     <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&family=Nunito:wght@400;600;700;800&display=swap');
+        * { box-sizing: border-box; }
+        body { margin: 0; }
+        ::-webkit-scrollbar { display: none; }
+        input:focus { border-color: #7C3AED !important; outline: none; box-shadow: 0 0 0 3px rgba(124,58,237,0.12); }
+      `}</style>
+      <div style={styles.app}>
+        <div style={styles.sidebar}>
+          <div style={styles.sidebarLogo}>toolkit</div>
+          <div style={styles.sidebarNav}>
+            {navItems.map(item => (
+              <button
+                key={item.key}
+                onClick={() => handleNav(item.key)}
+                style={{
+                  ...styles.navItem,
+                  ...(screen === item.key ? styles.navItemActive : {}),
+                }}
+              >
+                <img src={item.icon} alt={item.label} style={{ width: 20, height: 20 }} />
+                <span>{item.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
+        <div style={styles.phone}>
+          {renderScreen()}
         </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
+      </div>
     </>
-  )
+  );
 }
-
-export default App
