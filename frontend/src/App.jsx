@@ -5,6 +5,7 @@ import homeIcon from "./assets/Star Filled.png";
 import projectsIcon from "./assets/Create.png";
 import profileIcon from "./assets/Profile.png";
 import settingsIcon from "./assets/Settings.png";
+import toolkitLogo from "./assets/ToolkitLogo.svg";
 
 // Importação das telas organizadas
 import { HomePage } from "./screens/HomePage";
@@ -72,7 +73,9 @@ export default function App() {
       `}</style>
       <div style={styles.app}>
         <div style={styles.sidebar}>
-          <div style={styles.sidebarLogo}>toolkit</div>
+          <div style={styles.sidebarLogo}>
+            <img src={toolkitLogo} alt="Toolkit Logo" style={{ width: 150, height: 150 }} />
+          </div>
           <div style={styles.sidebarNav}>
             {navItems.map(item => (
               <button

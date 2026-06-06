@@ -1,10 +1,16 @@
 ﻿import React from "react";
 import { COLORS, styles } from "../constants/theme";
+import HomeBG  from "../assets/HomeBG.svg";
 
 export const HomePage = ({ onNavigate }) => (
   <div style={styles.screen}>
     <div style={{
-      background: "linear-gradient(135deg, #7C3AED 0%, #6D28D9 50%, #A78BFA 100%)",
+      background: `url(${HomeBG}) no-repeat center center`,
+      backgroundSize: "cover",
+      backgroundPosition: "right",
+      padding: "60px 80px",
+      position: "relative",
+      overflow: "hidden",
       padding: "60px 80px",
       position: "relative",
       overflow: "hidden",
