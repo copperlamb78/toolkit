@@ -6,12 +6,12 @@ export const HomePage = ({ onNavigate }) => (
   <div style={styles.screen}>
     <div style={{
       background: `url(${HomeBG}) no-repeat center center`,
+      opacity: 0.9,
       backgroundSize: "cover",
-      backgroundPosition: "right",
-      padding: "60px 80px",
+      backgroundPosition: "left",
       position: "relative",
       overflow: "hidden",
-      padding: "60px 80px",
+      padding: "90px 40px",
       position: "relative",
       overflow: "hidden",
     }}>
