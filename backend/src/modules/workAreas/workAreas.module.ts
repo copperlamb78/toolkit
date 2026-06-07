@@ -13,5 +13,6 @@ import { WorkAreas, WorkAreasSchema } from './workAreas.schema';
   ],
   controllers: [WorkAreasController],
   providers: [WorkAreasService, WorkAreasRepository],
+  exports: [WorkAreasService],
 })
 export class WorkAreasModule {}
