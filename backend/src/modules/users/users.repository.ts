@@ -1,7 +1,7 @@
 import { InjectModel } from '@nestjs/mongoose';
 import { Users } from './users.schema';
 import { Model } from 'mongoose';
-import { CreateUserDto } from './users.dto';
+import { CreateUserDto, UpdateUserDto } from './users.dto';
 
 export class UserRepository {
   constructor(@InjectModel(Users.name) private userModel: Model<Users>) {}
@@ -12,5 +12,13 @@ export class UserRepository {
 
   async findAll() {
     return this.userModel.find().exec();
+  }
+
+  async updateUser(id: string, data: UpdateUserDto) {
+    return this.userModel.findByIdAndUpdate(id, data, { new: true }).exec();
+  }
+
+  async deleteUser(id: string) {
+    return this.userModel.findByIdAndDelete(id).exec();
   }
 }
