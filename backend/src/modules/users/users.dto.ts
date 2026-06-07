@@ -93,9 +93,16 @@ export class UpdateUserDto {
     example: 'https://example.com/avatar.jpg',
     required: false,
   })
-  @IsOptional()
-  @IsString()
-  avatar?: string;
+  @ApiProperty({
+    description: 'Lista de arquivos das fotos do projeto',
+    type: 'array',
+    items: {
+      type: 'string',
+      format: 'binary',
+    },
+    required: true,
+  })
+  avatar!: any[];
 
   @ApiProperty({
     description: 'Link do Github',
