@@ -26,7 +26,7 @@ export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
-  @UseInterceptors(FilesInterceptor('PhotosList'))
+  @UseInterceptors(FilesInterceptor('photosList'))
   @ApiConsumes('multipart/form-data')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Cadastro de Projeto' })
