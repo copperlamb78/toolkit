@@ -7,7 +7,12 @@ import {
   Get,
   Patch,
   Param,
+  ApiConsumes,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+
 import {
   ApiTags,
   ApiOperation,
@@ -50,6 +55,8 @@ export class UsersController {
 
   @Patch('update/:id')
   @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FilesInterceptor('photosList'))
+  @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Atualizar usuário' })
   @ApiResponse({
     status: HttpStatus.OK,
@@ -58,7 +65,8 @@ export class UsersController {
   async updateUser(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
+    @UploadedFiles() file: any,
   ) {
-    return this.usersService.updateUser(id, updateUserDto);
+    return this.usersService.updateUser(id, updateUserDto, file);
   }
 }
