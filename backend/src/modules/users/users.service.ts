@@ -3,7 +3,7 @@ import { Users } from './users.schema';
 import { Injectable } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
-import { CreateUserDto } from './users.dto';
+import { CreateUserDto, UpdateUserDto } from './users.dto';
 
 @Injectable()
 export class UsersService {
@@ -36,5 +36,21 @@ export class UsersService {
 
   async findAll() {
     return this.userRepository.findAll();
+  }
+
+  async updateUser(id: string, data: UpdateUserDto) {
+    if (!id) {
+      throw new BadRequestException('ID do usuário não informado');
+    }
+
+    const existingUsers = this.findAll().then((users) => {
+      return users.find((users) => users.id === id);
+    });
+
+    if (!existingUsers) {
+      throw new BadRequestException('Usuário não encontrado');
+    }
+
+    return this.userRepository.updateUser(id, data);
   }
 }
