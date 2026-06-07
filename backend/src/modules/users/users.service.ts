@@ -4,10 +4,16 @@ import { Injectable } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import { CreateUserDto, UpdateUserDto } from './users.dto';
+import { cloudinaryHelper } from 'src/providers/cloudinary/cloudinary.helper';
+import { WorkAreasService } from '../workAreas/workAreas.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private userRepository: UserRepository) {}
+  constructor(
+    private userRepository: UserRepository,
+    private readonly cloudinaryHelper: cloudinaryHelper,
+    private readonly workAreasService: WorkAreasService,
+  ) {}
 
   async create(data: CreateUserDto): Promise<Partial<Users>> {
     if (data.password !== data.confirmPassword) {
@@ -38,9 +44,22 @@ export class UsersService {
     return this.userRepository.findAll();
   }
 
-  async updateUser(id: string, data: UpdateUserDto) {
+  async updateUser(id: string, data: UpdateUserDto, file: any) {
     if (!id) {
       throw new BadRequestException('ID do usuário não informado');
+    }
+    let avatar: any;
+    if (file) {
+      avatar = await this.cloudinaryHelper.uploadFiles(
+        [file].map((file) => {
+          return {
+            buffer: file.buffer,
+            originalname: file.originalname,
+            mimetype: file.mimetype,
+          };
+        }),
+        'users',
+      );
     }
 
     const existingUsers = await this.userRepository
@@ -51,6 +70,9 @@ export class UsersService {
       throw new BadRequestException('Usuário não encontrado');
     }
 
-    return this.userRepository.updateUser(id, data);
+    return this.userRepository.updateUser(id, {
+      ...data,
+      avatar: avatar[0].url,
+    });
   }
 }
