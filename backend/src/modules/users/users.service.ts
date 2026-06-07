@@ -43,9 +43,9 @@ export class UsersService {
       throw new BadRequestException('ID do usuário não informado');
     }
 
-    const existingUsers = this.findAll().then((users) => {
-      return users.find((users) => users.id === id);
-    });
+    const existingUsers = await this.userRepository
+      .findAll()
+      .then((users) => users.find((u) => u.id === id));
 
     if (!existingUsers) {
       throw new BadRequestException('Usuário não encontrado');
