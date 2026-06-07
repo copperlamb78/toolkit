@@ -17,6 +17,10 @@ export class Users {
   @Prop({ required: false })
   linkLinkedin!: string;
   @Prop({ required: false })
+  linkInstagram!: string;
+  @Prop({ required: false })
+  linkTwitter!: string;
+  @Prop({ required: false })
   username!: string;
   @Prop({ required: false, default: Date.now })
   createdAt!: Date;
