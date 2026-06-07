@@ -27,4 +27,15 @@ export class UsersController {
   async create(@Body() createUserDto: CreateUserDto) {
     return this.usersService.create(createUserDto);
   }
+
+  @Post()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Listar usuários' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Lista de usuários retornada com sucesso.',
+  })
+  async findAll() {
+    return this.usersService.findAll();
+  }
 }

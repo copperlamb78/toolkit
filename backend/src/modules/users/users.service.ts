@@ -33,4 +33,8 @@ export class UsersService {
     const { password, ...result } = user.toObject();
     return result;
   }
+
+  async findAll() {
+    return this.userRepository.findAll();
+  }
 }
