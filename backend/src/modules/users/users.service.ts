@@ -78,9 +78,22 @@ export class UsersService {
       throw new BadRequestException('Usuário não encontrado');
     }
 
-    return this.userRepository.updateUser(id, {
-      ...data,
-      avatar: avatar[0].url,
-    });
+    const updateData: UpdateUserDto = { ...data };
+    if (avatar && avatar.length > 0) {
+      updateData.avatar = avatar[0].url;
+    }
+
+    if (updateData.password) {
+      if (updateData.password !== updateData.confirmPassword) {
+        throw new BadRequestException('As senhas não coincidem');
+      }
+      updateData.password = await bcrypt.hash(updateData.password, 10);
+    }
+
+    if (updateData.confirmPassword !== undefined) {
+      delete updateData.confirmPassword;
+    }
+
+    return this.userRepository.updateUser(id, updateData);
   }
 }
