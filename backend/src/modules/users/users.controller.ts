@@ -8,18 +8,21 @@ import {
   Patch,
   Param,
   UseInterceptors,
-  UploadedFiles,
+  UploadedFile,
+  UseGuards,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ApiConsumes } from '@nestjs/swagger';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
   ApiBadRequestResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { CreateUserDto, UpdateUserDto } from './users.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Users')
 @Controller('users')
@@ -53,8 +56,10 @@ export class UsersController {
   }
 
   @Patch('update/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @HttpCode(HttpStatus.OK)
-  @UseInterceptors(FilesInterceptor('photosList'))
+  @UseInterceptors(FileInterceptor('avatar'))
   @ApiConsumes('multipart/form-data')
   @ApiOperation({ summary: 'Atualizar usuário' })
   @ApiResponse({
@@ -64,7 +69,7 @@ export class UsersController {
   async updateUser(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
-    @UploadedFiles() file: any,
+    @UploadedFile() file: any,
   ) {
     return this.usersService.updateUser(id, updateUserDto, file);
   }

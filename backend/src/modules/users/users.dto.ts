@@ -89,20 +89,13 @@ export class UpdateUserDto {
   description?: string;
 
   @ApiProperty({
-    description: 'Avatar do usuário',
-    example: 'https://example.com/avatar.jpg',
+    description: 'Avatar do usuário (arquivo)',
+    type: 'string',
+    format: 'binary',
     required: false,
   })
-  @ApiProperty({
-    description: 'Lista de arquivos das fotos do projeto',
-    type: 'array',
-    items: {
-      type: 'string',
-      format: 'binary',
-    },
-    required: true,
-  })
-  avatar!: any[];
+  @IsOptional()
+  avatar?: any;
 
   @ApiProperty({
     description: 'Link do Github',

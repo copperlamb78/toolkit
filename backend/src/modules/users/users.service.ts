@@ -44,6 +44,14 @@ export class UsersService {
     return this.userRepository.findAll();
   }
 
+  async findById(id: string) {
+    return this.userRepository.findById(id);
+  }
+
+  async findByEmail(email: string) {
+    return this.userRepository.findByEmail(email);
+  }
+
   async updateUser(id: string, data: UpdateUserDto, file: any) {
     if (!id) {
       throw new BadRequestException('ID do usuário não informado');

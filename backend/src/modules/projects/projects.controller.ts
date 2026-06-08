@@ -8,6 +8,7 @@ import {
   Param,
   UploadedFiles,
   UseInterceptors,
+  UseGuards,
 } from '@nestjs/common';
 import { ApiConsumes } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -16,9 +17,11 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBadRequestResponse,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ProjectsService } from './projects.service';
 import { CreateProjectsControllerDto } from './projects.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @ApiTags('Projects')
 @Controller('projects')
@@ -26,6 +29,8 @@ export class ProjectsController {
   constructor(private readonly projectsService: ProjectsService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
   @UseInterceptors(FilesInterceptor('photosList'))
   @ApiConsumes('multipart/form-data')
   @HttpCode(HttpStatus.CREATED)

@@ -7,6 +7,7 @@ import { UsersModule } from './modules/users/users.module';
 import { WorkAreasModule } from './modules/workAreas/workAreas.module';
 import { CategoryModule } from './modules/category/category.module';
 import { ProjectsModule } from './modules/projects/projects.module';
+import { AuthModule } from './modules/auth/auth.module';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ProjectsModule } from './modules/projects/projects.module';
     WorkAreasModule,
     CategoryModule,
     ProjectsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
