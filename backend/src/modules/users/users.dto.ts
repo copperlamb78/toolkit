@@ -7,6 +7,7 @@ import {
   IsArray,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 
 export class CreateUserDto {
   @ApiProperty({
@@ -49,6 +50,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   name?: string;
 
@@ -58,6 +60,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsEmail()
   email?: string;
 
@@ -67,6 +70,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @MinLength(6)
   password?: string;
 
@@ -76,6 +80,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @MinLength(6)
   confirmPassword?: string;
 
@@ -85,6 +90,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   description?: string;
 
@@ -103,6 +109,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   linkGithub?: string;
 
@@ -112,6 +119,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   linkLinkedin?: string;
 
@@ -121,6 +129,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   linkInstagram?: string;
 
@@ -130,6 +139,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   linkTwitter?: string;
 
@@ -139,6 +149,7 @@ export class UpdateUserDto {
     required: false,
   })
   @IsOptional()
+  @Transform(({ value }) => (value === '' ? undefined : value))
   @IsString()
   username?: string;
 
@@ -150,6 +161,17 @@ export class UpdateUserDto {
     type: String,
   })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (value === '') return undefined;
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value);
+      } catch (e) {
+        return value;
+      }
+    }
+    return value;
+  })
   @IsArray()
   @IsString({ each: true })
   workAreas?: string[];
