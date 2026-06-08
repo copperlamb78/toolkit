@@ -15,7 +15,7 @@ export class UserRepository {
   }
 
   async findById(id: string) {
-    return this.userModel.findOne({ id }).exec();
+    return this.userModel.findById(id).exec();
   }
 
   async findByEmail(email: string) {
