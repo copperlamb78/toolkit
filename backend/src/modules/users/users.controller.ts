@@ -7,12 +7,11 @@ import {
   Get,
   Patch,
   Param,
-  ApiConsumes,
   UseInterceptors,
   UploadedFiles,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
-
+import { ApiConsumes } from '@nestjs/swagger';
 import {
   ApiTags,
   ApiOperation,
