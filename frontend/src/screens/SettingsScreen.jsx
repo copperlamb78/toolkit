@@ -1,4 +1,4 @@
-﻿import React, { useState } from "react";
+﻿﻿import React, { useState } from "react";
 import { COLORS, styles } from "../constants/theme";
 
 export const SettingsScreen = ({ onNavigate }) => {
@@ -44,6 +44,11 @@ export const SettingsScreen = ({ onNavigate }) => {
 
   const handleSocialChange = (key, value) => {
     setSocials({ ...socials, [key]: value });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    onNavigate("home");
   };
 
   return (
@@ -233,6 +238,7 @@ export const SettingsScreen = ({ onNavigate }) => {
 
         {/* Logout */}
         <button
+          onClick={handleLogout}
           style={{
             width: "100%", padding: "12px", borderRadius: 10,
             background: "#FEE2E2", color: "#DC2626",

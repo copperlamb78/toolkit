@@ -9,12 +9,57 @@ export const RegisterScreen = ({ onNavigate }) => {
   const [pass, setPass] = useState("");
   const [confirm, setConfirm] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const inputStyle = {
     width: "100%", padding: "13px 16px",
     border: "1.5px solid #E5E7EB", borderRadius: 12,
     fontSize: 14, fontFamily: "inherit", outline: "none",
     color: COLORS.TEXT, background: COLORS.WHITE, boxSizing: "border-box",
+  };
+
+  const handleRegister = async () => {
+    if (!name || !email || !pass || pass !== confirm) {
+      setError("Preencha os campos corretamente e verifique a senha.");
+      return;
+    }
+    if (!agreed) {
+      setError("Você precisa concordar com os termos de privacidade.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:325/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password: pass }),
+      });
+
+      if (!response.ok) {
+        let errorMessage = "Erro ao realizar cadastro.";
+        
+        // Tenta ler como texto primeiro para evitar o erro de JSON vazio
+        const textData = await response.text();
+        try {
+          const errData = JSON.parse(textData);
+          errorMessage = errData.message || errData.error || errorMessage;
+        } catch (e) {
+          errorMessage = textData || errorMessage;
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      setStep(2);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (step === 1) return (
@@ -59,12 +104,18 @@ export const RegisterScreen = ({ onNavigate }) => {
           </span>
         </label>
 
-        <button onClick={() => setStep(2)} style={{
+        {error && (
+          <p style={{ color: "#DC2626", fontSize: 13, textAlign: "center", margin: "12px 0 0", fontWeight: 600 }}>
+            {error}
+          </p>
+        )}
+
+        <button onClick={handleRegister} disabled={isLoading} style={{
           width: "100%", padding: "14px",
-          background: `linear-gradient(135deg, ${COLORS.PURPLE}, #6D28D9)`,
+          background: isLoading ? "#9CA3AF" : `linear-gradient(135deg, ${COLORS.PURPLE}, #6D28D9)`,
           color: COLORS.WHITE, fontSize: 15, fontWeight: 700,
-          borderRadius: 14, border: "none", cursor: "pointer", marginTop: 8,
-        }}>Próximo</button>
+          borderRadius: 14, border: "none", cursor: isLoading ? "not-allowed" : "pointer", marginTop: 8,
+        }}>{isLoading ? "Carregando..." : "Próximo"}</button>
       </div>
     </div>
   );

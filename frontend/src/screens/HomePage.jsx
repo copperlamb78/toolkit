@@ -29,31 +29,20 @@ export const HomePage = ({ onNavigate }) => (
       <div style={{ display: "flex", gap: 12, marginTop: 32 }}>
         {["UI/UX", "Dev", "Design", "Motion"].map(tag => (
           <span key={tag} style={{
-            background: "rgba(255,255,255,0.2)", color: COLORS.WHITE,
+            background: "rgba(75, 75, 75, 0.2)", color: COLORS.WHITE,
             fontSize: 13, fontWeight: 600, padding: "6px 14px",
             borderRadius: 24, backdropFilter: "blur(10px)"
           }}>{tag}</span>
         ))}
       </div>
-      <button onClick={() => onNavigate("register")} style={{
-        marginTop: 40, padding: "14px 32px",
-        background: COLORS.WHITE, color: COLORS.PURPLE,
-        fontSize: 16, fontWeight: 700, borderRadius: 12,
-        border: "none", cursor: "pointer", letterSpacing: 0.5,
-      }}>
-        Começar agora →
-      </button>
     </div>
 
     <div style={{ padding: "60px 80px", flex: 1, display: "flex", gap: 60 }}>
       <div style={{ flex: 1 }}>
-        <h2 style={{ fontSize: 32, fontWeight: 800, color: COLORS.TEXT, marginBottom: 40 }}>Em destaque</h2>
+        
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 20 }}>
           {[
-            { name: "Ana Souza", role: "UI Designer", color: "#FDE68A" },
-            { name: "Pedro Lima", role: "Dev Full Stack", color: "#BBF7D0" },
-            { name: "Carlos Tech", role: "Motion Design", color: "#FCA5A5" },
-            { name: "Maria Dev", role: "Dev Backend", color: "#A5F3FC" },
+
           ].map(u => (
             <div key={u.name} style={{
               background: COLORS.WHITE, borderRadius: 16, padding: 24,
@@ -72,8 +61,26 @@ export const HomePage = ({ onNavigate }) => (
             </div>
           ))}
         </div>
+        <div style={{ display: "flex", justifyContent: "center", gap: 24, marginTop: 90 }}>
+          <button onClick={() => onNavigate("login")} style={{
+            padding: "30px 50px",
+            background: COLORS.PURPLE, color: COLORS.WHITE,
+            fontSize: 20, fontWeight: 700, borderRadius: 12,
+            border: "none", cursor: "pointer", letterSpacing: 0.5,
+          }}>
+            Login 
+          </button>
+          <button onClick={() => onNavigate("register")} style={{
+            padding: "30px 50px",
+            background: COLORS.PURPLE, color: COLORS.WHITE,
+            fontSize: 20, fontWeight: 700, borderRadius: 12,
+            border: "none", cursor: "pointer", letterSpacing: 0.5,
+          }}>
+            Registro 
+          </button>
+        </div>
       </div>
-
+          
     </div>
   </div>
 );

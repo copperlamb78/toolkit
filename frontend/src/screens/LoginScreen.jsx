@@ -5,12 +5,44 @@ export const LoginScreen = ({ onNavigate }) => {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [showPass, setShowPass] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const inputStyle = {
     width: "100%", padding: "13px 16px",
     border: "1.5px solid #E5E7EB", borderRadius: 12,
     fontSize: 14, fontFamily: "inherit", outline: "none",
     color: COLORS.TEXT, background: COLORS.WHITE, boxSizing: "border-box",
+  };
+
+  const handleLogin = async () => {
+    if (!email || !pass) {
+      setError("Por favor, preencha todos os campos.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("http://localhost:3000/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password: pass }),
+      });
+
+      if (!response.ok) {
+        throw new Error("E-mail ou senha incorretos.");
+      }
+
+      const data = await response.json();
+      localStorage.setItem("token", data.access_token);
+      onNavigate("profile");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -46,12 +78,18 @@ export const LoginScreen = ({ onNavigate }) => {
         display: "block", textAlign: "right", width: "100%",
       }}>Esqueceu sua senha?</button>
 
-      <button onClick={() => onNavigate("profile")} style={{
+      {error && (
+        <p style={{ color: "#DC2626", fontSize: 13, textAlign: "center", margin: "0 0 12px", fontWeight: 600 }}>
+          {error}
+        </p>
+      )}
+
+      <button onClick={handleLogin} disabled={isLoading} style={{
         width: "100%", padding: "14px",
-        background: `linear-gradient(135deg, ${COLORS.PURPLE}, #6D28D9)`,
+        background: isLoading ? "#9CA3AF" : `linear-gradient(135deg, ${COLORS.PURPLE}, #6D28D9)`,
         color: COLORS.WHITE, fontSize: 15, fontWeight: 700,
-        borderRadius: 14, border: "none", cursor: "pointer", margin: "12px 0",
-      }}>Login</button>
+        borderRadius: 14, border: "none", cursor: isLoading ? "not-allowed" : "pointer", margin: "12px 0",
+      }}>{isLoading ? "Entrando..." : "Login"}</button>
 
       <p style={{ textAlign: "center", fontSize: 13, color: COLORS.TEXT_MUTED, margin: "8px 0 20px" }}>
         Novo usuário?{" "}

@@ -6,9 +6,6 @@ export const ProfileScreen = ({ onNavigate }) => {
   const tabs = ["FRONT END", "BACK END", "DADOS", "TODOS"];
   const projects = [
     { title: "Projeto 1", desc: "Descrição do seu projeto.", color: "#BFDBFE" },
-    { title: "Projeto 1", desc: "Descrição do seu projeto.", color: "#DDD6FE" },
-    { title: "Projeto 1", desc: "Descrição do seu projeto.", color: "#FDE68A" },
-    { title: "Projeto 1", desc: "Descrição do seu projeto.", color: "#BBF7D0" },
   ];
 
   return (
