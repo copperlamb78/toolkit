@@ -12,6 +12,11 @@ async function bootstrap() {
     }),
   );
 
+  app.enableCors({
+    origin: 'http://localhost:3000',
+    credentials: true,
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Documentação da API do ToolKit')
     .setDescription('API para gerenciamento do ToolKit')

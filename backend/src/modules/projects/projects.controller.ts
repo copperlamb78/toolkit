@@ -9,6 +9,8 @@ import {
   UploadedFiles,
   UseInterceptors,
   UseGuards,
+  Delete,
+  Patch,
 } from '@nestjs/common';
 import { ApiConsumes } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -70,5 +72,42 @@ export class ProjectsController {
   })
   async findByCategory(@Param('category') category: string) {
     return this.projectsService.findByCategory(category);
+  }
+  @Delete('/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Deletar Projeto' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Projeto deletado com sucesso.',
+  })
+  @ApiBadRequestResponse({
+    description: 'Projeto não encontrado.',
+  })
+  async delete(@Param('id') id: string) {
+    return this.projectsService.delete(id);
+  }
+
+  @Patch('/:id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @UseInterceptors(FilesInterceptor('photosList'))
+  @ApiConsumes('multipart/form-data')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Atualizar Projeto' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Projeto atualizado com sucesso.',
+  })
+  @ApiBadRequestResponse({
+    description: 'Projeto não encontrado.',
+  })
+  async update(
+    @Param('id') id: string,
+    @Body() updateProjectsDto: CreateProjectsControllerDto,
+    @UploadedFiles() files: any[],
+  ) {
+    return this.projectsService.update(id, updateProjectsDto, files);
   }
 }

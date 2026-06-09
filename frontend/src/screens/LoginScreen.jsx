@@ -15,7 +15,8 @@ export const LoginScreen = ({ onNavigate }) => {
     color: COLORS.TEXT, background: COLORS.WHITE, boxSizing: "border-box",
   };
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
     if (!email || !pass) {
       setError("Por favor, preencha todos os campos.");
       return;
@@ -25,7 +26,7 @@ export const LoginScreen = ({ onNavigate }) => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:3000/auth/login", {
+      const response = await fetch("http://localhost:3250/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password: pass }),
@@ -36,7 +37,19 @@ export const LoginScreen = ({ onNavigate }) => {
       }
 
       const data = await response.json();
-      localStorage.setItem("token", data.access_token);
+      const token = data.access_token;
+      
+      // Salva o token no cookie
+      document.cookie = `token=${token}; path=/; max-age=86400`;
+      
+      // Salva o payload do JWT no cookie
+      try {
+        const payload = atob(token.split('.')[1]);
+        document.cookie = `jwt_payload=${encodeURIComponent(payload)}; path=/; max-age=86400`;
+      } catch (e) {
+        console.error("Erro ao decodificar JWT", e);
+      }
+      
       onNavigate("profile");
     } catch (err) {
       setError(err.message);
@@ -55,7 +68,7 @@ export const LoginScreen = ({ onNavigate }) => {
         <h2 style={{ fontSize: 22, fontWeight: 800, color: COLORS.TEXT, margin: 0 }}>Bem-vindo!</h2>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 16 }}>
+      <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         <div>
           <label style={{ fontSize: 13, fontWeight: 600, color: COLORS.TEXT_MUTED, display: "block", marginBottom: 6 }}>E-mail</label>
           <input style={inputStyle} type="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} />
@@ -64,32 +77,32 @@ export const LoginScreen = ({ onNavigate }) => {
           <label style={{ fontSize: 13, fontWeight: 600, color: COLORS.TEXT_MUTED, display: "block", marginBottom: 6 }}>Senha</label>
           <div style={{ position: "relative" }}>
             <input style={{ ...inputStyle, paddingRight: 44 }} type={showPass ? "text" : "password"} placeholder="Senha" value={pass} onChange={e => setPass(e.target.value)} />
-            <button onClick={() => setShowPass(!showPass)} style={{
+            <button type="button" onClick={() => setShowPass(!showPass)} style={{
               position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
               background: "none", border: "none", cursor: "pointer", color: COLORS.TEXT_MUTED, fontSize: 18,
             }}>{showPass ? "🙈" : "👁"}</button>
           </div>
         </div>
-      </div>
 
-      <button onClick={() => onNavigate("home")} style={{
-        marginBottom: 4, color: COLORS.PURPLE, background: "none",
-        border: "none", fontSize: 13, cursor: "pointer", fontWeight: 600,
-        display: "block", textAlign: "right", width: "100%",
-      }}>Esqueceu sua senha?</button>
+        <button type="button" onClick={() => onNavigate("home")} style={{
+          marginBottom: 4, color: COLORS.PURPLE, background: "none",
+          border: "none", fontSize: 13, cursor: "pointer", fontWeight: 600,
+          display: "block", textAlign: "right", width: "100%",
+        }}>Esqueceu sua senha?</button>
 
-      {error && (
-        <p style={{ color: "#DC2626", fontSize: 13, textAlign: "center", margin: "0 0 12px", fontWeight: 600 }}>
-          {error}
-        </p>
-      )}
+        {error && (
+          <p style={{ color: "#DC2626", fontSize: 13, textAlign: "center", margin: "0 0 12px", fontWeight: 600 }}>
+            {error}
+          </p>
+        )}
 
-      <button onClick={handleLogin} disabled={isLoading} style={{
-        width: "100%", padding: "14px",
-        background: isLoading ? "#9CA3AF" : `linear-gradient(135deg, ${COLORS.PURPLE}, #6D28D9)`,
-        color: COLORS.WHITE, fontSize: 15, fontWeight: 700,
-        borderRadius: 14, border: "none", cursor: isLoading ? "not-allowed" : "pointer", margin: "12px 0",
-      }}>{isLoading ? "Entrando..." : "Login"}</button>
+        <button type="submit" disabled={isLoading} style={{
+          width: "100%", padding: "14px",
+          background: isLoading ? "#9CA3AF" : `linear-gradient(135deg, ${COLORS.PURPLE}, #6D28D9)`,
+          color: COLORS.WHITE, fontSize: 15, fontWeight: 700,
+          borderRadius: 14, border: "none", cursor: isLoading ? "not-allowed" : "pointer", margin: "12px 0",
+        }}>{isLoading ? "Entrando..." : "Login"}</button>
+      </form>
 
       <p style={{ textAlign: "center", fontSize: 13, color: COLORS.TEXT_MUTED, margin: "8px 0 20px" }}>
         Novo usuário?{" "}

@@ -15,6 +15,7 @@ import { ProfileScreen } from "./screens/ProfileScreen";
 import { SettingsScreen } from "./screens/SettingsScreen";
 import { ProjectsTab } from "./screens/ProjectsTab";
 import { ProjectDetailScreen } from "./screens/ProjectDetailScreen";
+import { UnloggedProfile } from "./screens/unlogged";
 
 export default function App() {
   const [screen, setScreen] = useState("home");
@@ -50,6 +51,12 @@ export default function App() {
   };
 
   const renderScreen = () => {
+    const isLogged = document.cookie.includes("token=");
+
+    if (!isLogged && !["home", "login", "register"].includes(screen)) {
+      return <UnloggedProfile onNavigate={handleNav} />;
+    }
+
     switch (screen) {
       case "home": return <HomePage onNavigate={handleNav} />;
       case "login": return <LoginScreen onNavigate={handleNav} />;

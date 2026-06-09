@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty } from 'class-validator';
+import type { ObjectId } from 'mongoose';
 
 export class CreateProjectsDto {
   @ApiProperty({
@@ -84,4 +85,13 @@ export class CreateProjectsControllerDto {
   })
   @IsNotEmpty()
   category!: string;
+}
+
+export class DeleteProjectsDto {
+  @ApiProperty({
+    description: 'ID do projeto a ser deletado',
+    example: '64b8c9f1e4b0a2d3c4e5g6g7',
+  })
+  @IsNotEmpty()
+  id!: ObjectId;
 }

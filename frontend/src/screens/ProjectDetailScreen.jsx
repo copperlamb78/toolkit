@@ -4,7 +4,7 @@ import { COLORS, styles } from "../constants/theme";
 export const ProjectDetailScreen = ({ project, onBack, onUpdateProject }) => {
   const [fullscreenImage, setFullscreenImage] = useState(null);
   const [editMode, setEditMode] = useState(false);
-  const [editedProject, setEditedProject] = useState(project);
+  const [editedProject, setEditedProject] = useState({ ...project, rawFiles: [] });
 
   const handleAddMoreImages = (e) => {
     const files = Array.from(e.target.files);
@@ -14,6 +14,7 @@ export const ProjectDetailScreen = ({ project, onBack, onUpdateProject }) => {
         setEditedProject((prev) => ({
           ...prev,
           images: [...(prev.images || []), event.target.result],
+          rawFiles: [...(prev.rawFiles || []), file]
         }));
       };
       reader.readAsDataURL(file);
@@ -21,15 +22,90 @@ export const ProjectDetailScreen = ({ project, onBack, onUpdateProject }) => {
   };
 
   const handleRemoveImage = (index) => {
-    setEditedProject((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
-    }));
+    setEditedProject((prev) => {
+      const isRawFile = index >= (prev.images.length - (prev.rawFiles ? prev.rawFiles.length : 0));
+      
+      let newImages = [...prev.images];
+      let newRawFiles = prev.rawFiles ? [...prev.rawFiles] : [];
+
+      if (isRawFile) {
+        const rawIndex = index - (prev.images.length - newRawFiles.length);
+        newRawFiles.splice(rawIndex, 1);
+      }
+      newImages.splice(index, 1);
+
+      return {
+        ...prev,
+        images: newImages,
+        rawFiles: newRawFiles
+      };
+    });
   };
 
-  const handleSave = () => {
-    onUpdateProject(editedProject);
-    setEditMode(false);
+  const handleSave = async () => {
+    try {
+      const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('token='));
+      const jwtCookie = document.cookie.split('; ').find(row => row.startsWith('jwt_payload='));
+      if (!tokenCookie || !jwtCookie) return;
+      
+      const token = tokenCookie.split('=')[1];
+      const payload = JSON.parse(decodeURIComponent(jwtCookie.split('=')[1]));
+      const userId = payload.sub;
+
+      const formData = new FormData();
+      formData.append("id", editedProject.id);
+      formData.append("name", editedProject.title);
+      formData.append("description", editedProject.desc);
+      formData.append("category", editedProject.category || "FRONT END");
+      formData.append("userId", userId);
+
+      const oldImagesCount = editedProject.images.length - (editedProject.rawFiles ? editedProject.rawFiles.length : 0);
+      const oldImagesUrls = editedProject.images.slice(0, oldImagesCount);
+
+      await Promise.all(oldImagesUrls.map(async (url, index) => {
+        try {
+          const res = await fetch(url);
+          const blob = await res.blob();
+          const file = new File([blob], `existing_image_${index}.jpg`, { type: blob.type || "image/jpeg" });
+          formData.append("photosList", file);
+        } catch (error) {
+          console.error(`Erro ao converter imagem existente (${url}) para File:`, error);
+        }
+      }));
+
+      if (editedProject.rawFiles && editedProject.rawFiles.length > 0) {
+        editedProject.rawFiles.forEach(file => {
+          formData.append("photosList", file);
+        });
+      }
+
+      const res = await fetch(`http://localhost:3250/projects/${editedProject.id}`, {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const updatedProj = {
+          ...editedProject,
+          title: data.name,
+          desc: data.description,
+          images: data.photosList || editedProject.images,
+          category: data.category,
+          rawFiles: []
+        };
+        onUpdateProject(updatedProj);
+        setEditedProject(updatedProj);
+        setEditMode(false);
+      } else {
+        console.error("Erro ao atualizar projeto:", await res.text());
+      }
+    } catch (err) {
+      console.error("Erro na requisição:", err);
+    }
   };
 
   return (

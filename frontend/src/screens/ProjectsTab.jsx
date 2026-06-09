@@ -1,17 +1,65 @@
-﻿import React, { useState } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { COLORS, styles } from "../constants/theme";
 
 export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
   const [showModal, setShowModal] = useState(false);
-  const [newProject, setNewProject] = useState({ title: "", desc: "", images: [] });
+  const [newProject, setNewProject] = useState({ title: "", desc: "", category: "", images: [], rawFiles: [] });
   const [selectedProject, setSelectedProject] = useState(null);
   const [showGallery, setShowGallery] = useState(false);
   const [editingProject, setEditingProject] = useState(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [projectMenu, setProjectMenu] = useState(null);
+  const [categories, setCategories] = useState([]);
 
   const colors = ["#EDE9FE", "#DBEAFE", "#D1FAE5", "#FDE68A", "#FECACA", "#E0E7FF"];
+
+  useEffect(() => {
+    const fetchUserProjects = async () => {
+      try {
+        const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('token='));
+        const jwtCookie = document.cookie.split('; ').find(row => row.startsWith('jwt_payload='));
+        if (!tokenCookie || !jwtCookie) return;
+
+        const token = tokenCookie.split('=')[1];
+        const payload = JSON.parse(decodeURIComponent(jwtCookie.split('=')[1]));
+        const userId = payload.sub;
+
+        const [res, catRes] = await Promise.all([
+          fetch("http://localhost:3250/projects", {
+            headers: { "Authorization": `Bearer ${token}` }
+          }),
+          fetch("http://localhost:3250/category")
+        ]);
+
+        if (catRes.ok) {
+          const cats = await catRes.json();
+          setCategories(cats);
+        }
+
+        if (res.ok) {
+          const data = await res.json();
+          const userProjects = data.filter(p => p.userId === userId || p.userId?._id === userId);
+          
+          const mappedProjects = userProjects.map((p, index) => ({
+            id: p._id,
+            title: p.name,
+            desc: p.description,
+            images: p.photosList || [],
+            color: colors[index % colors.length],
+            category: p.category
+          }));
+          
+          setProjects(mappedProjects);
+        }
+      } catch (err) {
+        console.error("Erro ao buscar projetos do usuário:", err);
+      }
+    };
+
+    fetchUserProjects();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -21,6 +69,7 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
         setNewProject((prev) => ({
           ...prev,
           images: [...prev.images, event.target.result],
+          rawFiles: [...(prev.rawFiles || []), file]
         }));
       };
       reader.readAsDataURL(file);
@@ -31,21 +80,60 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
     setNewProject((prev) => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index),
+      rawFiles: (prev.rawFiles || []).filter((_, i) => i !== index)
     }));
   };
 
-  const handleAddProject = () => {
+  const handleAddProject = async () => {
     if (newProject.title.trim()) {
-      const newProj = {
-        id: Date.now(),
-        title: newProject.title,
-        desc: newProject.desc,
-        color: colors[projects.length % colors.length],
-        images: newProject.images,
-      };
-      setProjects([...projects, newProj]);
-      setNewProject({ title: "", desc: "", images: [] });
-      setShowModal(false);
+      try {
+        const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('token='));
+        const jwtCookie = document.cookie.split('; ').find(row => row.startsWith('jwt_payload='));
+        if (!tokenCookie || !jwtCookie) return;
+        
+        const token = tokenCookie.split('=')[1];
+        const payload = JSON.parse(decodeURIComponent(jwtCookie.split('=')[1]));
+        const userId = payload.sub;
+
+        const formData = new FormData();
+        formData.append("name", newProject.title);
+        formData.append("description", newProject.desc);
+        formData.append("category", newProject.category || (categories.length > 0 ? categories[0].name : "FRONT END"));
+        formData.append("userId", userId);
+
+        if (newProject.rawFiles) {
+          newProject.rawFiles.forEach(file => {
+            formData.append("photosList", file);
+          });
+        }
+
+        const res = await fetch("http://localhost:3250/projects", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`
+          },
+          body: formData
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const newProj = {
+            id: data._id,
+            title: data.name,
+            desc: data.description,
+            color: colors[projects.length % colors.length],
+            images: data.photosList || [],
+            category: data.category
+          };
+          setProjects([...projects, newProj]);
+          setNewProject({ title: "", desc: "", category: "", images: [], rawFiles: [] });
+          setShowModal(false);
+        } else {
+          console.error("Erro ao criar projeto:", await res.text());
+        }
+      } catch (err) {
+        console.error("Erro na requisição:", err);
+      }
     }
   };
 
@@ -55,42 +143,134 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
     setShowGallery(true);
   };
 
-  const handleAddImagesToProject = (e) => {
+  const handleAddImagesToProject = async (e) => {
     const files = Array.from(e.target.files);
+    
+    // Para simplificar a integração com o back-end, essa função pode ser complexa
+    // porque o endpoint de update atualiza o projeto todo. Vamos apenas atualizar 
+    // a preview local para este modal ou redirecionar para a edição.
+    // O backend só aceita update completo por PATCH /projects/:id
+    
+    // Atualização local imediata apenas para visualização
     files.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (event) => {
         setProjects((prevProjects) =>
           prevProjects.map((p) =>
             p.id === selectedProject.id
-              ? {
-                  ...p,
-                  images: [...(p.images || []), event.target.result],
-                }
+              ? { ...p, images: [...(p.images || []), event.target.result] }
               : p
           )
         );
+        setSelectedProject((prev) => ({
+          ...prev,
+          images: [...(prev.images || []), event.target.result]
+        }));
       };
       reader.readAsDataURL(file);
     });
   };
 
   const handleEditProject = (project) => {
-    setEditingProject({ ...project });
+    setEditingProject({ ...project, rawFiles: [] });
     setShowEditModal(true);
     setProjectMenu(null);
   };
 
-  const handleSaveEditProject = () => {
-    setProjects(projects.map(p => p.id === editingProject.id ? editingProject : p));
-    setShowEditModal(false);
-    setEditingProject(null);
+  const handleSaveEditProject = async () => {
+    try {
+      const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('token='));
+      const jwtCookie = document.cookie.split('; ').find(row => row.startsWith('jwt_payload='));
+      if (!tokenCookie || !jwtCookie) return;
+      
+      const token = tokenCookie.split('=')[1];
+      const payload = JSON.parse(decodeURIComponent(jwtCookie.split('=')[1]));
+      const userId = payload.sub;
+
+      const formData = new FormData();
+      formData.append("id", editingProject.id);
+      formData.append("name", editingProject.title);
+      formData.append("description", editingProject.desc);
+      formData.append("category", editingProject.category || (categories.length > 0 ? categories[0].name : "FRONT END"));
+      formData.append("userId", userId);
+
+      // Identificar e converter as imagens antigas para File
+      const oldImagesCount = editingProject.images.length - (editingProject.rawFiles ? editingProject.rawFiles.length : 0);
+      const oldImagesUrls = editingProject.images.slice(0, oldImagesCount);
+
+      // Busca as imagens existentes e as converte para Blobs/Files para simular o upload novamente
+      await Promise.all(oldImagesUrls.map(async (url, index) => {
+        try {
+          const res = await fetch(url);
+          const blob = await res.blob();
+          const file = new File([blob], `existing_image_${index}.jpg`, { type: blob.type || "image/jpeg" });
+          formData.append("photosList", file);
+        } catch (error) {
+          console.error(`Erro ao converter imagem existente (${url}) para File:`, error);
+        }
+      }));
+
+      // Adiciona as novas imagens enviadas pelo usuário
+      if (editingProject.rawFiles && editingProject.rawFiles.length > 0) {
+        editingProject.rawFiles.forEach(file => {
+          formData.append("photosList", file);
+        });
+      }
+
+      const res = await fetch(`http://localhost:3250/projects/${editingProject.id}`, {
+        method: "PATCH",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const updatedProj = {
+          id: data._id,
+          title: data.name,
+          desc: data.description,
+          color: editingProject.color,
+          images: data.photosList || editingProject.images, // Usa o que voltou, se não manter o local
+          category: data.category
+        };
+        setProjects(projects.map(p => p.id === editingProject.id ? updatedProj : p));
+        setShowEditModal(false);
+        setEditingProject(null);
+      } else {
+        console.error("Erro ao atualizar projeto:", await res.text());
+      }
+    } catch (err) {
+      console.error("Erro na requisição:", err);
+    }
   };
 
-  const handleDeleteProject = (projectId) => {
-    setProjects(projects.filter(p => p.id !== projectId));
-    setShowDeleteConfirm(null);
-    setProjectMenu(null);
+  const handleDeleteProject = async (projectId) => {
+    try {
+      const tokenCookie = document.cookie.split('; ').find(row => row.startsWith('token='));
+      if (!tokenCookie) return;
+      const token = tokenCookie.split('=')[1];
+
+      const res = await fetch(`http://localhost:3250/projects/${projectId}`, {
+        method: "DELETE",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ id: projectId })
+      });
+
+      if (res.ok) {
+        setProjects(projects.filter(p => p.id !== projectId));
+        setShowDeleteConfirm(null);
+        setProjectMenu(null);
+      } else {
+        console.error("Erro ao deletar:", await res.text());
+      }
+    } catch (err) {
+      console.error("Erro na requisição:", err);
+    }
   };
 
   const handleAddImageToEditingProject = (e) => {
@@ -101,6 +281,7 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
         setEditingProject((prev) => ({
           ...prev,
           images: [...(prev.images || []), event.target.result],
+          rawFiles: [...(prev.rawFiles || []), file]
         }));
       };
       reader.readAsDataURL(file);
@@ -108,10 +289,24 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
   };
 
   const handleRemoveEditingImage = (index) => {
-    setEditingProject((prev) => ({
-      ...prev,
-      images: prev.images.filter((_, i) => i !== index),
-    }));
+    setEditingProject((prev) => {
+      const isRawFile = index >= (prev.images.length - prev.rawFiles.length);
+      
+      let newImages = [...prev.images];
+      let newRawFiles = [...prev.rawFiles];
+
+      if (isRawFile) {
+        const rawIndex = index - (prev.images.length - prev.rawFiles.length);
+        newRawFiles.splice(rawIndex, 1);
+      }
+      newImages.splice(index, 1);
+
+      return {
+        ...prev,
+        images: newImages,
+        rawFiles: newRawFiles
+      };
+    });
   };
 
   return (
@@ -138,15 +333,15 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
             key={p.id}
             onClick={() => onSelectProject && onSelectProject(p)}
             style={{
-              background: COLORS.WHITE, borderRadius: 16, overflow: "hidden",
+              background: COLORS.WHITE, borderRadius: 16,
               border: "1px solid #F3F4F6", cursor: "pointer",
-              transition: "transform 0.2s",
+              transition: "transform 0.2s", position: "relative"
             }}
             onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-2px)"}
             onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
           >
             {p.images && p.images.length > 0 ? (
-              <div style={{ height: 160, background: "#F3F4F6", position: "relative", overflow: "hidden" }}>
+              <div style={{ height: 160, background: "#F3F4F6", position: "relative", overflow: "hidden", borderRadius: "16px 16px 0 0" }}>
                 <img
                   src={p.images[0]}
                   alt={p.title}
@@ -165,7 +360,7 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
                 )}
               </div>
             ) : (
-              <div style={{ height: 130, background: p.color, display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <div style={{ height: 130, background: p.color, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: "16px 16px 0 0" }}>
                 <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                   <rect x="4" y="8" width="32" height="24" rx="4" fill="rgba(255,255,255,0.6)"/>
                   <rect x="10" y="16" width="20" height="3" rx="1.5" fill="rgba(0,0,0,0.15)"/>
@@ -175,7 +370,12 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
             )}
             <div style={{ padding: "12px 16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: COLORS.TEXT, margin: "0 0 4px" }}>{p.title}</p>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: COLORS.TEXT, margin: 0 }}>{p.title}</p>
+                  <span style={{ fontSize: 10, fontWeight: 600, color: COLORS.PURPLE, background: "#EDE9FE", padding: "2px 6px", borderRadius: 4 }}>
+                    {p.category}
+                  </span>
+                </div>
                 <p style={{ fontSize: 12, color: COLORS.TEXT_MUTED, margin: 0 }}>{p.desc}</p>
               </div>
               <div style={{ display: "flex", gap: 8, marginLeft: 8, position: "relative" }}>
@@ -280,6 +480,24 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
               />
             </div>
 
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.TEXT_MUTED }}>Categoria</label>
+              <select
+                value={newProject.category}
+                onChange={(e) => setNewProject({ ...newProject, category: e.target.value })}
+                style={{
+                  width: "100%", padding: "12px", marginTop: 8, borderRadius: 10,
+                  border: `1px solid #E5E7EB`, fontSize: 14,
+                  boxSizing: "border-box", background: COLORS.WHITE,
+                }}
+              >
+                <option value="">Selecione uma categoria...</option>
+                {categories.map((c) => (
+                  <option key={c._id} value={c.name}>{c.name}</option>
+                ))}
+              </select>
+            </div>
+
             <div style={{ marginBottom: 20 }}>
               <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.TEXT_MUTED }}>Descrição</label>
               <textarea
@@ -356,7 +574,7 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
               <button
                 onClick={() => {
                   setShowModal(false);
-                  setNewProject({ title: "", desc: "", images: [] });
+                  setNewProject({ title: "", desc: "", category: "", images: [], rawFiles: [] });
                 }}
                 style={{
                   flex: 1, padding: "12px", borderRadius: 10,
@@ -484,6 +702,24 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
                   boxSizing: "border-box",
                 }}
               />
+            </div>
+
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ fontSize: 12, fontWeight: 600, color: COLORS.TEXT_MUTED }}>Categoria</label>
+              <select
+                value={editingProject.category || ""}
+                onChange={(e) => setEditingProject({ ...editingProject, category: e.target.value })}
+                style={{
+                  width: "100%", padding: "12px", marginTop: 8, borderRadius: 10,
+                  border: `1px solid #E5E7EB`, fontSize: 14,
+                  boxSizing: "border-box", background: COLORS.WHITE,
+                }}
+              >
+                <option value="">Selecione uma categoria...</option>
+                {categories.map((c) => (
+                  <option key={c._id} value={c.name}>{c.name}</option>
+                ))}
+              </select>
             </div>
 
             <div style={{ marginBottom: 20 }}>
@@ -631,3 +867,4 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
     </div>
   );
 };
+
