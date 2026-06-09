@@ -44,7 +44,7 @@ export const SettingsScreen = ({ onNavigate }) => {
         const payload = JSON.parse(decodeURIComponent(jwtCookie.split("=")[1]));
         const userId = payload.sub;
 
-        const response = await fetch("http://localhost:3250/users", {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/users`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -150,16 +150,13 @@ export const SettingsScreen = ({ onNavigate }) => {
         formData.append("avatar", avatarFile);
       }
 
-      const response = await fetch(
-        `http://localhost:3250/users/update/${userId}`,
-        {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
+      const response = await fetch(`/users/update/${userId}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: formData,
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));

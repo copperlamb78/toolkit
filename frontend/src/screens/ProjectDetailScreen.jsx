@@ -79,7 +79,7 @@ export const ProjectDetailScreen = ({ project, onBack, onUpdateProject }) => {
         });
       }
 
-      const res = await fetch(`http://localhost:3250/projects/${editedProject.id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/projects/${editedProject.id}`, {
         method: "PATCH",
         headers: {
           "Authorization": `Bearer ${token}`

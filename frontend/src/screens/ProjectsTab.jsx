@@ -26,10 +26,10 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
         const userId = payload.sub;
 
         const [res, catRes] = await Promise.all([
-          fetch("http://localhost:3250/projects", {
+          fetch(`${import.meta.env.VITE_API_URL}/projects`, {
             headers: { "Authorization": `Bearer ${token}` }
           }),
-          fetch("http://localhost:3250/category")
+          fetch(`${import.meta.env.VITE_API_URL}/category`)
         ]);
 
         if (catRes.ok) {
@@ -107,7 +107,7 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
           });
         }
 
-        const res = await fetch("http://localhost:3250/projects", {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/projects`, {
           method: "POST",
           headers: {
             "Authorization": `Bearer ${token}`
@@ -217,7 +217,7 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
         });
       }
 
-      const res = await fetch(`http://localhost:3250/projects/${editingProject.id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/projects/${editingProject.id}`, {
         method: "PATCH",
         headers: {
           "Authorization": `Bearer ${token}`
@@ -252,7 +252,7 @@ export const ProjectsTab = ({ projects, setProjects, onSelectProject }) => {
       if (!tokenCookie) return;
       const token = tokenCookie.split('=')[1];
 
-      const res = await fetch(`http://localhost:3250/projects/${projectId}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/projects/${projectId}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`,

@@ -20,7 +20,7 @@ export const ProfileScreen = ({ onNavigate }) => {
         const userId = payload.sub;
 
         // Buscar Usuários e filtrar o atual
-        const usersRes = await fetch("http://localhost:3250/users", {
+        const usersRes = await fetch(`${import.meta.env.VITE_API_URL}/users`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (usersRes.ok) {
@@ -30,7 +30,7 @@ export const ProfileScreen = ({ onNavigate }) => {
         }
 
         // Buscar Categorias
-        const catRes = await fetch("http://localhost:3250/category", {
+        const catRes = await fetch(`${import.meta.env.VITE_API_URL}/category`, {
           headers: { "Authorization": `Bearer ${token}` }
         });
         if (catRes.ok) {
@@ -56,9 +56,9 @@ export const ProfileScreen = ({ onNavigate }) => {
         const payload = JSON.parse(decodeURIComponent(jwtCookie.split('=')[1]));
         const userId = payload.sub;
 
-        let url = "http://localhost:3250/projects";
+        let url = `${import.meta.env.VITE_API_URL}/projects`;
         if (activeTab !== "TODOS") {
-          url = `http://localhost:3250/projects/category/${encodeURIComponent(activeTab)}`;
+          url = `${import.meta.env.VITE_API_URL}/projects/category/${encodeURIComponent(activeTab)}`;
         }
 
         const res = await fetch(url, {

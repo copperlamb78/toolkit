@@ -41,7 +41,7 @@ export const RegisterScreen = ({ onNavigate }) => {
       }
       const data = { name, email, password: pass, confirmPassword: confirm };
 
-      const res = await axios.post("http://localhost:3250/users", data);
+      const res = await axios.post(`${import.meta.env.VITE_API_URL}/users`, data);
 
       setStep(2);
       return res.data;
