@@ -1,4 +1,4 @@
-import { cloudinaryHelper } from 'src/providers/cloudinary/cloudinary.helper';
+import { cloudinaryHelper } from '../../providers/cloudinary/cloudinary.helper';
 import { CreateProjectsControllerDto, CreateProjectsDto } from './projects.dto';
 import { projectsRepository } from './projects.repository';
 import { Injectable, BadRequestException } from '@nestjs/common';

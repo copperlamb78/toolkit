@@ -4,7 +4,7 @@ import { Injectable } from '@nestjs/common';
 import { BadRequestException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 import { CreateUserDto, UpdateUserDto } from './users.dto';
-import { cloudinaryHelper } from 'src/providers/cloudinary/cloudinary.helper';
+import { cloudinaryHelper } from '../../providers/cloudinary/cloudinary.helper';
 import { WorkAreasService } from '../workAreas/workAreas.service';
 
 @Injectable()

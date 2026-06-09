@@ -5,7 +5,7 @@ import { UsersService } from './users.service';
 import { UserRepository } from './users.repository';
 import { UsersController } from './users.controller';
 import { WorkAreasModule } from '../workAreas/workAreas.module';
-import { cloudinaryModule } from 'src/providers/cloudinary/cloudinary.module';
+import { cloudinaryModule } from '../../providers/cloudinary/cloudinary.module';
 
 @Module({
   imports: [
